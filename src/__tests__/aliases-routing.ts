@@ -4,19 +4,22 @@ import Router, { Routes } from '..';
 
 describe('Router', () => {
   describe('with configuration containing aliases', () => {
-    const homeResult = { name: 'home' };
-    const aboutResult = { name: 'about' };
-    const config: Routes<{ name: string }> = [
+    const config: Routes<{}> = [
       {
         name: 'home',
         path: '/',
         alias: [{ path: '/a', imply: { a: 'a' } }, { path: '/ab', imply: { a: 'a', b: 'b' } }],
-        load: () => homeResult,
+        load: (params) => params,
       },
       {
         name: 'about',
         path: '/about',
-        load: () => aboutResult,
+        load: (params) => params,
+      },
+      {
+        name: 'article',
+        path: '/article/:slug',
+        load: (params) => params,
       },
     ];
 
@@ -27,12 +30,35 @@ describe('Router', () => {
 
     it('resolve should work', () => {
       const router = new Router(config);
-      expect(router.resolve('/')).toEqual({ ...homeResult });
-      expect(router.resolve('/a')).toEqual({ ...homeResult });
-      expect(router.resolve('/ab')).toEqual({ ...homeResult });
-      expect(router.resolve('/about')).toEqual({
-        ...aboutResult,
-      });
+      expect(router.resolve('/')).toMatchInlineSnapshot(`
+        Object {
+          "name": "home",
+        }
+      `);
+      expect(router.resolve('/a')).toMatchInlineSnapshot(`
+        Object {
+          "a": "a",
+          "name": "home",
+        }
+      `);
+      expect(router.resolve('/ab')).toMatchInlineSnapshot(`
+        Object {
+          "a": "a",
+          "b": "b",
+          "name": "home",
+        }
+      `);
+      expect(router.resolve('/about')).toMatchInlineSnapshot(`
+        Object {
+          "name": "about",
+        }
+      `);
+      expect(router.resolve('/article/the-slug-1')).toMatchInlineSnapshot(`
+        Object {
+          "name": "article",
+          "slug": "the-slug-1",
+        }
+      `);
     });
 
     it('getHref should work', () => {

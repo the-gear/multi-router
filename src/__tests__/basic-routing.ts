@@ -25,6 +25,7 @@ describe('Router', () => {
   describe('with simple configuration', () => {
     const homeResult = { name: 'home' };
     const aboutResult = { name: 'about' };
+    const articleResult = { name: 'article' };
     const config: Routes<{ name: string }> = [
       {
         name: 'home',
@@ -36,18 +37,22 @@ describe('Router', () => {
         path: '/about',
         load: () => aboutResult,
       },
+      {
+        name: 'article',
+        path: '/article/:slug',
+        load: () => articleResult,
+      },
     ];
-
-    it('should create', () => {
-      const router = new Router(config);
-      expect(router).toBeInstanceOf(Router);
-    });
 
     it('resolve should work', () => {
       const router = new Router(config);
+      expect(router).toBeInstanceOf(Router);
       expect(router.resolve('/')).toEqual({ ...homeResult });
       expect(router.resolve('/about')).toEqual({
         ...aboutResult,
+      });
+      expect(router.resolve('/article/the-slug')).toEqual({
+        ...articleResult,
       });
     });
 
@@ -55,6 +60,7 @@ describe('Router', () => {
       const router = new Router(config);
       expect(router.getHref('home')).toBe('/');
       expect(router.getHref('about')).toBe('/about');
+      expect(router.getHref('article', { slug: 'great-reading' })).toBe('/article/great-reading');
       expect(() => router.getHref('undefined')).toThrowErrorMatchingInlineSnapshot(
         `"Unknown route: 'undefined'"`,
       );
